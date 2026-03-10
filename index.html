@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    
+    <title>Ben Zimmermann</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="Crane.svg" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+      html{
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: rgb(0, 0, 0);
+        font-family: 'Poppins', sans-serif;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .canvas {
+        position: relative;
+        width: 96vw;
+        height: 91vh;
+        border: 0.1px solid white;
+        overflow: hidden;
+      }
+
+      /* Canvas innerhalb des Containers */
+      .canvas canvas {
+        z-index: 1;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+         filter: blur(3px);
+        image-rendering: pixelated;
+      }
+    .noise {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 5;
+        background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+        opacity: 1; 
+        mix-blend-mode: soft-light;
+    }
+
+
+
+      /* Overlay-Inhalt über der Animation */
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .overlay-content {
+        pointer-events: auto; /* wieder aktivieren */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      h1 {
+        font-size: 3em;
+        margin-bottom: 10px;
+      }
+      
+/* === GRID-BEREICH === */
+.parent {
+  display: grid;
+  position: absolute;
+  inset: 0;
+  gap: 2vh;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  padding: 0.5vh 1vw;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+/* === NAME (oben links) === */
+.name {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+        pointer-events: none;
+
+  text-align: left;
+  font-size: clamp(1rem, 1.6vw, 1.4rem);
+  letter-spacing: 0.05em;
+  line-height: 1;
+
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 2vh 2vw;
+}
+
+.name h2 {
+  margin: 0;
+  font-weight: 600;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.name a {
+  margin-top: 0.5rem;
+  font-size: 0.85em;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* === NAVIGATION (rechte Seite, vertikal) === */
+.navigation {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+
+  z-index: 100;
+  gap: 3vh;
+  font-size: clamp(5rem, 3vw, 3rem);
+  font-weight: 300;
+  text-align: right;
+  text-transform: uppercase;
+  line-height: 1.1;
+  padding-right: 4%;
+
+}
+
+.navigation span a {
+  position: relative;
+  text-decoration: none;
+  color: white;
+
+}
+
+.navigation span a:hover {
+ background:
+    linear-gradient(
+      to right,
+      white
+  );
+  background-size: 100% 1px, 0 1px;
+  background-position: 100% 100%, 0 100%;
+  background-repeat: no-repeat;
+  /* font-style: italic; */
+}
+
+
+/* === DESCRIPTION (unten links) === */
+.description {
+  grid-column: 1;
+  grid-row: 2;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+
+  padding: 2vh 2vw;
+  max-width: 60ch;
+}
+
+.description h3 {
+  margin: 0 0 0.8rem 0;
+  font-size: clamp(1.7rem, 2vw, 1.5rem);
+  font-weight: 500;
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.description a {
+  color: white;
+  text-align: left;
+}
+
+.typewrite{
+ color:#fff;
+  text-decoration: none;
+}
+.description p, 
+.description h3 {
+  text-align: left;
+  transition: opacity 0.3s ease;
+}
+/*seiten wechsel nav link styles*/
+/* Standard */
+.navigation a {
+  position: relative;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.navigation a.active {
+  color: transparent; /* Text ausblenden */
+  pointer-events: none; /* deaktivieren, wenn aktiv */
+}
+
+.navigation a.active::after {
+  content: "●"; /* Punkt-Symbol */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: white;
+  font-size: 1em;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Hover */
+.navigation a:hover {
+  color: #aaa;
+  /* font-style: italic; */
+}
+
+/* Beschreibung smooth ein-/ausblenden */
+#desc-title,
+#desc-text {
+  transition: opacity 0.3s ease;
+}
+
+#desc-text ul, li {
+  text-align: left;
+  list-style-type: disc;
+}
+#desc-text p {
+  text-align: left;
+}
+#desc-text strong {
+    transition: opacity 0.3s ease;
+    font-size: clamp(2rem, 3vw, 3rem);
+}
+#desc-text a {
+  color: white;
+  text-align: left;
+  font-style: bold;
+  text-decoration: none;
+}
+
+#desc-text strong:hover {
+  cursor: pointer;
+  opacity: 0.5;
+
+}
+
+#project-list {
+  line-height: 20px;
+  font-size: clamp(1.7rem, 2vw, 1.5rem);
+  max-height: 40vh;
+  overflow: scroll;
+  scrollbar-width: none; /* Versteckt den Scrollbalken in WebKit-basierten Browsern */
+  scrollbar-color: transparent transparent; /* Versteckt den Scrollbalken in Firefox */;
+  -ms-overflow-style: none; /* Internet Explorer / Edge */
+}
+#project-list::-webkit-scrollbar {
+  display: none; /* Versteckt den Scrollbalken in WebKit-basierten Browsern */
+}
+#project-description {
+  font-size: 10px;
+}
+#contact-info {
+  text-align: left;
+}
+
+#theme-switcher {
+  z-index: 100; 
+  position: absolute; 
+  writing-mode: sideways-lr; 
+  top: 70%; 
+  left: 0%; 
+  text-orientation: mixed;
+}
+#ratio-container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+}
+/*...*/
+.theme-switcher {
+  position: absolute;
+  top: 50%;
+  left: 1%;
+  transform: translateY(-50%);
+  gap: 0.8rem;
+  z-index: 100;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* === Container-Label === */
+.radio {
+  gap: 0.6rem;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  font-size: clamp(0.8rem, 1vw, 1rem);
+}
+
+/* === Quadratische Radio Buttons === */
+.radio input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  left: 10px;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid white;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+/* Wenn aktiviert */
+.radio input[type="radio"]:checked {
+  background-color: white;
+
+}
+
+/* Farbliche Varianten */
+#dark:checked {
+  background-color: #838383;
+}
+
+#green:checked {
+  background-color: #838383;
+}
+
+
+/* === Beschriftung === */
+.radio span {
+  letter-spacing: 0.05em;
+}
+
+/* Responsive: Abstand leicht verringern bei kleinen Screens */
+@media (max-width: 600px) {
+  .theme-switcher {
+    left: 2%;
+    gap: 0.5rem;
+  }
+
+  .radio input[type="radio"] {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+/* === RESPONSIVE ANPASSUNGEN === */
+/* mittlere Bildschirme (Tablets / kleine Laptops) */
+@media (max-width: 1200px) {
+  .parent {
+    gap: 1.5vh;
+    padding: 1vh 2vw;
+  }
+
+  .name, .description {
+    font-size: 90%;
+    padding: 1.5vh 2vw;
+  }
+
+  .navigation {
+    font-size: clamp(2rem, 4vw, 3rem);
+    gap: 2vh;
+  }
+
+  #desc-text strong {
+    font-size: clamp(1.5rem, 2vw, 2rem);
+  }
+}
+
+/* kleine Bildschirme (Tablets hochkant / große Smartphones) */
+@media (max-width: 900px) {
+  .canvas {
+    width: 90%;
+    height: 90vh;
+  }
+
+  .parent {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 2vh;
+  }
+
+  .name {
+    grid-column: 1;
+    grid-row: 1;
+    align-items: left;
+    font-size: 80%;
+  }
+
+  .navigation {
+    grid-column: 1;
+    grid-row: 2;
+    align-items: right;
+    font-size: clamp(2rem, 6vw, 3rem);
+    gap: 2vh;
+    padding: 0;
+  }
+
+  .description {
+    grid-column: 1;
+    grid-row: 3;
+    align-items: left;
+    font-size: clamp(0.9rem, 1.8vw, 1rem);
+  }
+
+  #desc-text {
+    max-width: 80%;
+  }
+}
+
+/* sehr kleine Bildschirme (Smartphones) */
+@media (max-width: 600px) {
+  body {
+    font-size: 85%;
+  }
+
+  .canvas {
+    width: 90%;
+    height: 90vh;
+  }
+
+  .name h2 {
+    font-size: clamp(1rem, 5vw, 1.4rem);
+  }
+
+  .navigation {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    gap: 1.5vh;
+  }
+
+  .description {
+    font-size: clamp(0.8rem, 1.5vw, 1rem);
+  }
+
+  #desc-text strong {
+    font-size: clamp(1rem, 3vw, 1.4rem);
+  }
+
+  #theme-switcher {
+    top: auto;
+    bottom: 2vh;
+    left: 2vw;
+    writing-mode: horizontal-tb;
+    display: none;
+  }
+}
+
+    </style>
+  </head>
+  <body>
+       <div id="theme-switcher">
+      <label class="radio">
+        <input type="radio" name="theme" id="dark" checked />
+        <span >Dark</span>
+      </label>
+      <!-- <label>
+        <input type="radio" name="theme" id="light" style="background-color: white;" />
+        <span style="color: white;">Light</span>
+      </label> -->
+        <label class="radio">
+        <input type="radio" name="theme" id="green" />
+        <span>Hack</span>
+      </label>
+    </div>
+    <div class="canvas">
+        <div class="noise">
+      <!-- === Three.js Animation === -->
+<script type="module">
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+
+  const themeSwitcher = document.getElementById('theme-switcher');
+  themeSwitcher.addEventListener('change', (event) => {
+    if (event.target.id === 'dark') {
+      material.color.set(0x3e3e3e);
+      renderer.setClearColor(0x000000);
+    // } else if (event.target.id === 'light') {
+    //   material.color.set(0x000000);
+    //   renderer.setClearColor(0xffffff);
+    //   const allElements = document.body.querySelectorAll('*');
+    //   allElements.forEach(el => {
+    //     el.style.color = 'black';
+    //     el.style.borderColor = 'black';
+    //   });
+
+    } else if (event.target.id === 'green') {
+      material.color.set(0x005500);
+      renderer.setClearColor(0x000000);
+    }
+  });
+  const container = document.querySelector('.canvas');
+
+  // === Szene, Kamera, Renderer ===
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 100);
+  camera.position.z = 4;
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setClearColor(0x000000);
+  container.appendChild(renderer.domElement);
+
+  // === Material und Geometrie ===
+  const material = new THREE.MeshBasicMaterial({ color: 0x3e3e3e, wireframe: true });
+  const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+  // === Boxen erstellen (benannte Objekte) ===
+  function createBoxes() {
+    const box1 = new THREE.Mesh(geometry, material);
+    const box2 = new THREE.Mesh(geometry, material);
+    const box3 = new THREE.Mesh(geometry, material);
+    const box4 = new THREE.Mesh(geometry, material);
+    const box5 = new THREE.Mesh(geometry, material);
+    const box6 = new THREE.Mesh(geometry, material);
+
+    box1.add(box2);
+    box2.scale.set(0.5, 0.5, 0.5);
+    box2.add(box3);
+    box3.scale.set(0.5, 0.5, 0.5);
+    box3.add(box4);
+    box4.scale.set(0.5, 0.5, 0.5);
+    box4.add(box5);
+    box5.scale.set(0.5, 0.5, 0.5);
+    box5.add(box6);
+    box6.scale.set(0.5, 0.5, 0.5);
+
+    return { box1, box2, box3, box4, box5, box6 };
+  }
+
+  const boxes = createBoxes();
+  const root = boxes.box1;
+  root.scale.set(5, 5, 5);
+  scene.add(root);
+
+  // === Animation ===
+  function animate(time) {
+    requestAnimationFrame(animate);
+    const t = time / 150;
+
+    boxes.box1.rotation.y = Math.sin(t / 16);
+    boxes.box1.rotation.x = Math.cos(t / 16);
+    boxes.box2.rotation.y = Math.sin(t / 12);
+    boxes.box2.rotation.x = Math.cos(t / 12);
+    boxes.box3.rotation.y = Math.sin(t / 8);
+    boxes.box3.rotation.x = Math.cos(t / 8);
+    boxes.box4.rotation.y = Math.sin(t / 4);
+    boxes.box4.rotation.x = Math.cos(t / 4);
+    boxes.box5.rotation.y = Math.sin(t / 2);
+    boxes.box5.rotation.x = Math.cos(t / 2);
+    boxes.box6.rotation.y = Math.sin(t / 0.5);
+    boxes.box6.rotation.x = Math.cos(t / 0.5);
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+  });
+</script>
+
+    </div>
+      <!-- === Overlay über der Animation === -->
+      <div class="overlay">
+        <div class="overlay-content">
+        <div class="parent">
+            <div class="navigation">
+                    <span><a href="#home">Home</a></span>
+                    <span><a href="#projects">Projects</a></span>
+                    <span><a href="#about">About</a></span>
+                    <span><a href="#contact">Contact</a></span>
+            </div>
+            <div class="name">
+              <!-- typing effect -->
+    <script>
+            var TxtType = function(el, toRotate, period) {
+            this.toRotate = toRotate;
+            this.el = el;
+            this.loopNum = 0;
+            this.period = parseInt(period, 10) || 2000;
+            this.txt = '';
+            this.tick();
+            this.isDeleting = false;
+        };
+
+            TxtType.prototype.tick = function() {
+            var i = this.loopNum % this.toRotate.length;
+            var fullTxt = this.toRotate[i];
+
+            if (this.isDeleting) {
+            this.txt = fullTxt.substring(0, this.txt.length - 1);
+            } else {
+            this.txt = fullTxt.substring(0, this.txt.length + 1);
+            }
+
+            this.el.innerHTML = '<span class="wrap">'+this.txt+'</span>';
+
+            var that = this;
+            var delta = 200 - Math.random() * 100;
+
+            if (this.isDeleting) { delta /= 2; }
+
+            if (!this.isDeleting && this.txt === fullTxt) {
+            delta = this.period;
+            this.isDeleting = true;
+            } else if (this.isDeleting && this.txt === '') {
+            this.isDeleting = false;
+            this.loopNum++;
+            delta = 500;
+            }
+
+            setTimeout(function() {
+            that.tick();
+            }, delta);
+        };
+
+        window.onload = function() {
+            var elements = document.getElementsByClassName('typewrite');
+            for (var i=0; i<elements.length; i++) {
+                var toRotate = elements[i].getAttribute('data-type');
+                var period = elements[i].getAttribute('data-period');
+                if (toRotate) {
+                new TxtType(elements[i], JSON.parse(toRotate), period);
+                }
+            }
+            // INJECT CSS
+            var css = document.createElement("style");
+            css.type = "text/css";
+            css.innerHTML = ".typewrite > .wrap { border-right: 0.08em solid #fff}";
+            document.body.appendChild(css);
+        };
+    </script>
+                <h2>
+                Ben Zimmermann
+                <br>Developing
+                    <a href="" class="typewrite" data-period="2000" data-type='[ " Games", " Websites"]'style="text-decoration: underline;">
+                    <span class="wrap"></span>
+                    </a>
+              </br>
+            </h2>
+            <a>Designer and Developer</a>
+        </a>
+        </div>
+
+<div class="description">
+  <h3 id="desc-title"></h3>
+  <div id="desc-text">
+  </div>
+</div>
+
+<script>
+  const descriptions = {
+    home: {
+      html: `
+        <p>I believe games are the magical fusion of creativity and technology, 
+          bringing worlds full of art and imagination to life. 
+          They weave diverse ideas into experiences that let players immerse themselves and feel more deeply than any other medium.</p>
+      `
+    },
+    projects: {
+      html: `
+        <div id="project-list">
+          <p><strong><a href="https://github.com/sam77il/cybergames" target="_blank">Night Punk</strong><br><a id="project-description">February2025/Dev/Lead Artist</a></p>
+          <p><strong><a href="https://github.com/BenZimmermann/CrownFall" target="_blank">Crownfall</a></strong><br><a  id="project-description" >June2025/Dev/Design</a></p>
+          <p><strong><a href="https://github.com/BenZimmermann/Further_Horizon" target="_blank">Further Horizon</a></strong><br><a id="project-description">November2025/Teamlead/Game Director/</a></p>
+          <p><strong><a href="https://github.com/BenZimmermann/Combine_Kittens" target="_blank">Combine Kittens</a></strong><br><a id="project-description">October2025/Dev/Game Director</a></p>
+        </div>
+      `
+    },
+    about: {
+      html: `
+        <p>I’m passionate about blending technology and design in game and web development.
+        In Unity, I build interactive systems, creative solutions, and refined visuals.
+        My goal is to craft immersive experiences that unite technical precision and artistic vision.</p>
+      `
+    },
+    contact: {
+      html: `
+        <div id="contact-info">
+          <br><a href="mailto:lorem"><i class="fas fa-envelope"></i> E-Mail</a>
+          <br><a href="https://github.com/BenZimmermann" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+          <br>  <a href="https://linkedin.com/in/deinprofil" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+      `
+    }
+  };
+
+  const navLinks = document.querySelectorAll('.navigation a');
+  const descTitle = document.getElementById('desc-title');
+  const descText = document.getElementById('desc-text');
+
+  function loadSection(section) {
+    const content = descriptions[section];
+    if (!content) return;
+
+    // Alle Links zurücksetzen
+    navLinks.forEach(l => l.classList.remove('active'));
+
+    // Den passenden Link markieren
+    const activeLink = document.querySelector(`.navigation a[href="#${section}"]`);
+    if (activeLink) activeLink.classList.add('active');
+
+    // Smooth Fade-Effekt
+    descText.style.opacity = 0;
+    descTitle.style.opacity = 0;
+
+    setTimeout(() => {
+      descTitle.textContent = content.title;
+      descText.innerHTML = content.html;
+      descText.style.opacity = 1;
+      descTitle.style.opacity = 1;
+    }, 300);
+  }
+
+  // Klick-Events für alle Navigationslinks
+  navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const section = link.getAttribute('href').substring(1);
+      if (!link.classList.contains('active')) {
+        loadSection(section);
+      }
+    });
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadSection('home');
+  });
+</script>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
